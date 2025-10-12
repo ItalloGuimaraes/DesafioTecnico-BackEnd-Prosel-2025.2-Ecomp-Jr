@@ -1,9 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.orm import declarative_base
-from config.db import engine
-from datetime import datetime
-
-Base = declarative_base()
+from datetime import datetime, UTC
+from .database import Base
 
 class Empresa(Base):
     __tablename__ = "empresas"
@@ -15,6 +12,4 @@ class Empresa(Base):
     ramo_atuacao = Column(String(255))
     telefone = Column(String(255))
     email_contato = Column(String(255), unique=True, index=True)
-    data_cadastro = Column(DateTime, default=datetime.utcnow)
-
-Base.metadata.create_all(bind=engine)
+    data_cadastro = Column(DateTime, default=lambda: datetime.now(UTC))

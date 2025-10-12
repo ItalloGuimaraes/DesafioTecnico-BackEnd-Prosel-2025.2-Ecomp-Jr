@@ -11,6 +11,7 @@ from config.db import get_db
 from datetime import timedelta
 
 router = APIRouter(
+    prefix="/admins",
     tags=["Auth"] 
 )
 
