@@ -1,23 +1,26 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
-from config.db import Session
+from config.db import get_db, Session # Importe get_db do lugar certo
 from schemas.empresas import EmpresaCreate, EmpresaSchema, EmpresaUpdate
+from schemas.admins import AdminSchema # <-- ADICIONAR import do AdminSchema
 from model.empresas import Empresa
 from typing import List, Optional
+from routers import admins
+from auth import get_current_admin # <-- ADICIONAR import do get_current_admin
 
 app = FastAPI()
 
+app.include_router(admins.router)
 
-def get_db():
-    db = Session()
-    try:
-        yield db
-    finally:
-        db.close()
+# --- A função get_db foi movida para config/db.py, então não é mais necessária aqui ---
 
-# Cria uma empresa
+# Cria uma empresa (protegida)
 @app.post("/empresas", response_model=EmpresaSchema)
-def create_empresa(empresa: EmpresaCreate, db: Session = Depends(get_db)):
+def create_empresa(
+    empresa: EmpresaCreate, 
+    db: Session = Depends(get_db),
+    current_admin: AdminSchema = Depends(get_current_admin) # <-- ROTA PROTEGIDA
+):
     try:
         nova_empresa = Empresa(**empresa.model_dump())
         db.add(nova_empresa)
@@ -28,60 +31,68 @@ def create_empresa(empresa: EmpresaCreate, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=409, detail="Já existe uma empresa com este CNPJ ou e-mail.")
 
-
-# Lista todas as empresas do banco de dados e aplica os filtros e busca
+# Lista todas as empresas (protegida)
 @app.get("/empresas", response_model=List[EmpresaSchema])
 def get_empresas(
     db: Session = Depends(get_db),
     cidade: Optional[str] = None,
     ramo_atuacao: Optional[str] = None,
-    nome: Optional[str] = None
+    nome: Optional[str] = None,
+    current_admin: AdminSchema = Depends(get_current_admin) # <-- ROTA PROTEGIDA
 ):
-    # Inicia a consulta base
     query = db.query(Empresa)
-
-    # Aplica o filtro de cidade, se ele for fornecido
     if cidade:
         query = query.filter(Empresa.cidade == cidade)
-
-    # Aplica o filtro de ramo de atuação, se ele for fornecido
     if ramo_atuacao:
         query = query.filter(Empresa.ramo_atuacao == ramo_atuacao)
-
-    # Aplica a busca textual pelo nome, se for fornecida
     if nome:
         query = query.filter(Empresa.name.ilike(f"%{nome}%"))
-
-    # Executa a consulta final e retorna os resultados
     return query.all()
 
-# Exibe os detalhes de uma empresa pelo id
-@app.get("/empresas/{empresa_id}")
-def get_empresa_by_id(empresa_id: int, db: Session = Depends(get_db)):
+# Exibe os detalhes de uma empresa pelo id (protegida)
+@app.get("/empresas/{empresa_id}", response_model=EmpresaSchema)
+def get_empresa_by_id(
+    empresa_id: int, 
+    db: Session = Depends(get_db),
+    current_admin: AdminSchema = Depends(get_current_admin) # <-- ROTA PROTEGIDA
+):
     db_empresa = db.query(Empresa).filter(Empresa.id == empresa_id).first()
-    if (not db_empresa):
+    if not db_empresa:
         raise HTTPException(status_code=404, detail="Empresa não encontrada!")
     return db_empresa
 
-# Atualiza os dados de uma empresa, a partir do id
-@app.put("/empresas/{empresa_id}")
-def update_empresa(empresa_id: int, empresa_data: EmpresaUpdate ,db: Session = Depends(get_db)):
+# Atualiza os dados de uma empresa (protegida)
+@app.put("/empresas/{empresa_id}", response_model=EmpresaSchema)
+def update_empresa(
+    empresa_id: int, 
+    empresa_data: EmpresaUpdate, 
+    db: Session = Depends(get_db),
+    current_admin: AdminSchema = Depends(get_current_admin) # <-- ROTA PROTEGIDA
+):
     db_empresa = db.query(Empresa).filter(Empresa.id == empresa_id).first()
-    if (not db_empresa):
+    if not db_empresa:
         raise HTTPException(status_code=404, detail="Empresa não encontrada!")
     
-    for (key, value) in empresa_data.model_dump().items():
+    for key, value in empresa_data.model_dump(exclude_unset=True).items(): 
         setattr(db_empresa, key, value)
-        
-    db.commit()
-    db.refresh(db_empresa)
-    return db_empresa
+    
+    try:
+        db.commit()
+        db.refresh(db_empresa)
+        return db_empresa
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="Já existe uma empresa com este CNPJ ou e-mail.")
 
-# Deleta uma empresa do banco de dados, a partir do id
+# Deleta uma empresa (protegida)
 @app.delete("/empresas/{empresa_id}")
-def delete_empresa(empresa_id: int ,db: Session = Depends(get_db)):
+def delete_empresa(
+    empresa_id: int, 
+    db: Session = Depends(get_db),
+    current_admin: AdminSchema = Depends(get_current_admin) # <-- ROTA PROTEGIDA
+):
     db_empresa = db.query(Empresa).filter(Empresa.id == empresa_id).first()
-    if (not db_empresa):
+    if not db_empresa:
         raise HTTPException(status_code=404, detail="Empresa não encontrada!")
     
     db.delete(db_empresa)
