@@ -17,3 +17,10 @@ class EmpresaSchema(EmpresaCreate):
     class Config:
         from_attributes = True # Permite que o Pydantic leia dados de objetos SQLAlchemy
     
+
+class EmpresaUpdate(BaseModel):
+    name: str
+    cidade: str
+    ramo_atuacao: str
+    telefone: str
+    email_contato: str
