@@ -1,16 +1,27 @@
 from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.exc import IntegrityError
-from config.db import get_db, Session 
-from schemas.empresas import EmpresaCreate, EmpresaSchema, EmpresaUpdate
-from schemas.admins import AdminSchema 
-from model.empresas import Empresa
 from typing import List, Optional
+from sqlalchemy.exc import IntegrityError
+
+from config.db import engine
+from model.database import Base
+import model.empresas
+import model.admins
+
+Base.metadata.create_all(bind=engine)
+
+from config.db import get_db, Session
+from schemas.empresas import EmpresaCreate, EmpresaSchema, EmpresaUpdate
+from schemas.admins import AdminSchema
+from model.empresas import Empresa
+from auth import get_current_admin
 from routers import admins
-from auth import get_current_admin 
 
+# Criação e Configuração do App 
 app = FastAPI()
-
 app.include_router(admins.router)
+
+
+# Definição das Rotas
 
 # Cria uma empresa (protegida)
 @app.post("/empresas", response_model=EmpresaSchema)
@@ -65,7 +76,7 @@ def update_empresa(
     empresa_id: int, 
     empresa_data: EmpresaUpdate, 
     db: Session = Depends(get_db),
-    current_admin: AdminSchema = Depends(get_current_admin) # <-- ROTA PROTEGIDA
+    current_admin: AdminSchema = Depends(get_current_admin) # ROTA PROTEGIDA
 ):
     db_empresa = db.query(Empresa).filter(Empresa.id == empresa_id).first()
     if not db_empresa:
@@ -96,3 +107,7 @@ def delete_empresa(
     db.delete(db_empresa)
     db.commit()
     return {"detail": "Empresa deletada com sucesso!"}
+
+@app.get("/")
+def read_root():
+    return {"message": "Bem-vindo à API de Gerenciamento de Empresas!"}
