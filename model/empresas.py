@@ -5,7 +5,6 @@ from datetime import datetime
 
 Base = declarative_base()
 
-# CORREÇÃO: Verifique se o nome da classe está "Empresa" (singular, com E maiúsculo)
 class Empresa(Base):
     __tablename__ = "empresas"
     
