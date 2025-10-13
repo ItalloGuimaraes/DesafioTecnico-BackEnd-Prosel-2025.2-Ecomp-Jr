@@ -94,6 +94,7 @@ As rotas de CRUD e consulta de empresas são protegidas e exigem um token de aut
 #### `POST /register`
 
   * **Descrição:** Registra um novo administrador no sistema.
+  * **Postman:** `POST /admins/register'
   * **Corpo da Requisição (`application/json`):**
     ```json
     {
@@ -106,6 +107,7 @@ As rotas de CRUD e consulta de empresas são protegidas e exigem um token de aut
 #### `POST /login`
 
   * **Descrição:** Autentica um administrador e retorna um token de acesso JWT.
+  * **Postman:** `POST /admins/login'
   * **Corpo da Requisição (`x-www-form-urlencoded`):**
       * `username`: admin\_user
       * `password`: admin\_password
@@ -125,6 +127,7 @@ As rotas de CRUD e consulta de empresas são protegidas e exigem um token de aut
 
   * **Descrição:** Cadastra uma nova empresa cliente.
   * **Autenticação:** Obrigatória.
+  * **Teste pelo Postman:** Passos: Authorization -> Auth Type -> Bearer Token -> Cola o conteudo de "access_token" do login.
   * **Corpo da Requisição (`application/json`):**
     ```json
     {
@@ -141,6 +144,7 @@ As rotas de CRUD e consulta de empresas são protegidas e exigem um token de aut
 #### `GET /empresas`
 * **Descrição:** Lista todas as empresas cadastradas. Suporta filtros opcionais por `cidade` e `ramo_atuacao`, e busca textual por `nome`.
 * **Autenticação:** Obrigatória.
+* **Teste pelo Postman:** Passos: Authorization -> Auth Type -> Bearer Token -> Cola o conteudo de "access_token" do login.
 * **Parâmetros de Consulta (Opcionais):**
     * `cidade` (string): Filtra as empresas pela cidade informada. Ex: `?cidade=Salvador`
     * `ramo_atuacao` (string): Filtra as empresas pelo ramo de atuação. Ex: `?ramo_atuacao=Tecnologia`
@@ -152,12 +156,14 @@ As rotas de CRUD e consulta de empresas são protegidas e exigem um token de aut
 
   * **Descrição:** Retorna os detalhes de uma única empresa pelo seu ID.
   * **Autenticação:** Obrigatória.
+  * **Teste pelo Postman:** Passos: Authorization -> Auth Type -> Bearer Token -> Cola o conteudo de "access_token" do login.
   * **Resposta de Erro (`404 Not Found`):** Se a empresa com o ID especificado não for encontrada.
 
 #### `PUT /empresas/{empresa_id}`
 
   * **Descrição:** Atualiza os dados de uma empresa existente (exceto `id`, `cnpj` e `data_de_cadastro`).
   * **Autenticação:** Obrigatória.
+  * **Teste pelo Postman:** Passos: Authorization -> Auth Type -> Bearer Token -> Cola o conteudo de "access_token" do login.
   * **Corpo da Requisição (`application/json`):** Apenas os campos a serem atualizados.
     ```json
     {
@@ -169,6 +175,7 @@ As rotas de CRUD e consulta de empresas são protegidas e exigem um token de aut
 #### `PUT /empresas/{empresa_id}`
 * **Descrição:** Atualiza os dados de uma empresa existente (exceto `id`, `cnpj` e `data_de_cadastro`).
 * **Autenticação:** Obrigatória.
+* **Teste pelo Postman:** Passos: Authorization -> Auth Type -> Bearer Token -> Cola o conteudo de "access_token" do login.
 * **Corpo da Requisição (`application/json`):** Apenas os campos a serem atualizados.
     ```json
     {
@@ -183,6 +190,7 @@ As rotas de CRUD e consulta de empresas são protegidas e exigem um token de aut
 
   * **Descrição:** Exclui uma empresa do banco de dados.
   * **Autenticação:** Obrigatória.
+  * **Teste pelo Postman:** Passos: Authorization -> Auth Type -> Bearer Token -> Cola o conteudo de "access_token" do login.
   * **Resposta de Sucesso (`200 OK`):**
     ```json
     {
