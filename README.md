@@ -207,4 +207,4 @@ As rotas de CRUD e consulta de empresas são protegidas e exigem um token de aut
 Desenvolvido por **Ítallo Guimarães**.
 
 * **GitHub:** [ItalloGuimaraes](https://github.com/ItalloGuimaraes)
-* **LinkedIn:** [Ítallo Guimarães](www.linkedin.com/in/ítallo-guimarães-782832274)
+* **LinkedIn:** [Ítallo Guimarães](www.linkedin.com/in/itallo-guimaraes)
